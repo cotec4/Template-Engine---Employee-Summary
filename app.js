@@ -34,7 +34,9 @@ function userChoice() {
             name: "officeNumber",
             type: "input",
             message: "What is your office number?"
-        }]).then(
+        }]).then((response) => {
+            const manager = new Manager(response.name, response.id, response.email, response.officeNumber);
+            employeeList.push(manager);
             inquirer.prompt([
                 {
                     name: "choice",
@@ -42,18 +44,20 @@ function userChoice() {
                     message: "Do you want to add a new employee?",
                     choices: ["Intern", "Engineer", "No"]
                 }
-            ])).then((answer) => {
-                switch (answer.choice) {
+            ]).then((response) => {
+                const choice = response.choices;
+                switch (choice) {
                     case "Intern":
-                        return createIntern();
+                        createIntern();
                     case "Engineer":
-                        return createEngineer();
+                        createEngineer();
                     case "No":
-                        return htmlRender();
+                        htmlRender();
                     default:
                         break;
                 };
             });
+        });
 };
 
 function createIntern() {
