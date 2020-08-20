@@ -11,9 +11,18 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 const render = require("./lib/htmlRenderer");
 let employeeList = [];
 
-userChoice();
+newManager();
 
-function userChoice() {
+function validate(email) {
+    valid = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+    if (!valid) {
+        console.log("\nPlease enter a valid email address");
+        return false;
+    }
+    return true;
+}
+
+function newManager() {
     inquirer.prompt([
         {
             name: "name",
@@ -28,7 +37,8 @@ function userChoice() {
         {
             name: "email",
             type: "input",
-            message: "What is your email?"
+            message: "What is your email?",
+            validate: (email) => validate(email)
         },
         {
             name: "officeNumber",
@@ -37,28 +47,36 @@ function userChoice() {
         }]).then((response) => {
             const manager = new Manager(response.name, response.id, response.email, response.officeNumber);
             employeeList.push(manager);
-            inquirer.prompt([
-                {
-                    name: "choice",
-                    type: "list",
-                    message: "Do you want to add a new employee?",
-                    choices: ["Intern", "Engineer", "No"]
-                }
-            ]).then((response) => {
-                const choice = response.choices;
-                switch (choice) {
-                    case "Intern":
-                        createIntern();
-                    case "Engineer":
-                        createEngineer();
-                    case "No":
-                        htmlRender();
-                    default:
-                        break;
-                };
-            });
+            choices();
         });
 };
+
+function choices() {
+    inquirer.prompt([
+        {
+            name: "choice",
+            type: "list",
+            message: "Do you want to add a new employee?",
+            choices: ["Intern", "Engineer", "No"]
+        }
+    ]).then((response) => {
+        const choice = response.choice;
+        switch (choice) {
+            case "Intern":
+                createIntern();
+                break;
+            case "Engineer":
+                createEngineer();
+                break;
+            case "No":
+                htmlRender();
+                break;
+            default:
+                break;
+        };
+    });
+
+}
 
 function createIntern() {
     inquirer.prompt([
@@ -75,7 +93,8 @@ function createIntern() {
         {
             name: "email",
             type: "input",
-            message: "What is your intern's email?"
+            message: "What is your intern's email?",
+            validate: (email) => validate(email)
         },
         {
             name: "school",
@@ -85,7 +104,7 @@ function createIntern() {
     ]).then((answer) => {
         const intern = new Intern(answer.name, answer.id, answer.email, answer.school);
         employeeList.push(intern);
-        userChoice();
+        choices();
     });
 };
 
@@ -104,7 +123,8 @@ function createEngineer() {
         {
             name: "email",
             type: "input",
-            message: "What is your engineer's email?"
+            message: "What is your engineer's email?",
+            validate: (email) => validate(email)
         },
         {
             name: "github",
@@ -114,34 +134,14 @@ function createEngineer() {
     ]).then((answer) => {
         const engineer = new Engineer(answer.name, answer.id, answer.email, answer.github);
         employeeList.push(engineer);
-        userChoice();
+        choices();
     });
 };
 
 function htmlRender() {
     const html = render(employeeList);
-    fs.writeFileSync(outputPath, html);
+    fs.writeFile(outputPath, html, (err) => {
+        if (err) console.log(err);
+        else console.log("Here's your team!");
+    });
 };
-
-// returned from the `render` function. Now write it to a file named `team.html` in the
-// Write code to use inquirer to gather information about the development team members,
-// and to create objects for each team member (using the correct classes as blueprints!)
-
-// After the user has input all employees desired, call the `render` function (required
-// above) and pass in an array containing all employee objects; the `render` function will
-// generate and return a block of HTML including templated divs for each employee!
-
-// After you have your html, you're now ready to create an HTML file using the HTML
-// `output` folder. You can use the variable `outputPath` above target this location.
-// Hint: you may need to check if the `output` folder exists and create it if it
-// does not.
-
-// HINT: each employee type (manager, engineer, or intern) has slightly different
-// information; write your code to ask different questions via inquirer depending on
-// employee type.
-
-// HINT: make sure to build out your classes first! Remember that your Manager, Engineer,
-// and Intern classes should all extend from a class named Employee; see the directions
-// for further information. Be sure to test out each class and verify it generates an
-// object with the correct structure and methods. This structure will be crucial in order
-// for the provided `render` function to work! ```
